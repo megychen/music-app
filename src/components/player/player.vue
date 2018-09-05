@@ -1,11 +1,10 @@
 <template>
-  <div class="player" v-show="playList.length > 0">
-    <transition
-      name="normal"
-      @enter="enter"
-      @after-enter="afterEnter"
-      @leave="leave"
-      @after-leave="afterLeave"
+  <div class="player" v-show="playList.length>0">
+    <transition name="normal"
+                @enter="enter"
+                @after-enter="afterEnter"
+                @leave="leave"
+                @after-leave="afterLeave"
     >
       <div class="normal-player" v-show="fullScreen">
         <div class="background">
@@ -18,11 +17,10 @@
           <h1 class="title" v-html="currentSong.name"></h1>
           <h2 class="subtitle" v-html="currentSong.singer"></h2>
         </div>
-        <div
-          class="middle"
-          @touchstart.prevent="middleTouchStart"
-          @touchmove.prevent="middleTouchMove"
-          @touchend="middleTouchEnd"
+        <div class="middle"
+             @touchstart.prevent="middleTouchStart"
+             @touchmove.prevent="middleTouchMove"
+             @touchend="middleTouchEnd"
         >
           <div class="middle-l" ref="middleL">
             <div class="cd-wrapper" ref="cdWrapper">
@@ -37,28 +35,23 @@
           <scroll class="middle-r" ref="lyricList" :data="currentLyric && currentLyric.lines">
             <div class="lyric-wrapper">
               <div v-if="currentLyric">
-                <p
-                  ref="lyricLine"
-                  class="text"
-                  :class="{'current': currentLineNum === index}"
-                  v-for="(line, index) in currentLyric.lines"
-                  :key="index"
-                >
-                  {{line.txt}}
-                </p>
+                <p ref="lyricLine"
+                   class="text"
+                   :class="{'current': currentLineNum ===index}"
+                   v-for="(line,index) in currentLyric.lines" :key="index">{{line.txt}}</p>
               </div>
             </div>
           </scroll>
         </div>
         <div class="bottom">
           <div class="dot-wrapper">
-            <span class="dot" :class="{'active': currentShow === 'cd'}"></span>
-            <span class="dot" :class="{'active': currentShow === 'lyric'}"></span>
+            <span class="dot" :class="{'active':currentShow==='cd'}"></span>
+            <span class="dot" :class="{'active':currentShow==='lyric'}"></span>
           </div>
           <div class="progress-wrapper">
             <span class="time time-l">{{format(currentTime)}}</span>
             <div class="progress-bar-wrapper">
-              <progress-bar :percent="percent" @percentChange="progressBarChange"></progress-bar>
+              <progress-bar :percent="percent" @percentChange="onProgressBarChange"></progress-bar>
             </div>
             <span class="time time-r">{{format(currentSong.duration)}}</span>
           </div>
@@ -66,13 +59,13 @@
             <div class="icon i-left" @click="changeMode">
               <i :class="iconMode"></i>
             </div>
-            <div class="icon i-left">
+            <div class="icon i-left" :class="disableCls">
               <i @click="prev" class="icon-prev"></i>
             </div>
-            <div class="icon i-center">
+            <div class="icon i-center" :class="disableCls">
               <i @click="togglePlaying" :class="playIcon"></i>
             </div>
-            <div class="icon i-right">
+            <div class="icon i-right" :class="disableCls">
               <i @click="next" class="icon-next"></i>
             </div>
             <div class="icon i-right">
@@ -97,35 +90,29 @@
           </progress-circle>
         </div>
         <div class="control">
-          <i class="icon-playlist"></i>
+          <i class="icon-playList"></i>
         </div>
       </div>
     </transition>
-    <audio :src="currentSong.url" ref="audio" @canplay="ready" @error="error" @timeupdate="updateTime" @ended="end"></audio>
+    <audio ref="audio" :src="currentSong.url" @canplay="ready" @error="error" @timeupdate="updateTime"
+           @ended="end"></audio>
   </div>
 </template>
 
 <script>
-import ProgressBar from 'base/progress-bar/progress-bar'
-import ProgressCircle from 'base/progress-circle/progress-circle'
 import {mapGetters, mapMutations} from 'vuex'
 import animations from 'create-keyframe-animation'
 import {prefixStyle} from 'common/js/dom'
+import ProgressBar from 'base/progress-bar/progress-bar'
+import ProgressCircle from 'base/progress-circle/progress-circle'
 import {playMode} from 'common/js/config'
 import {shuffle} from 'common/js/util'
 import Lyric from 'lyric-parser'
 import Scroll from 'base/scroll/scroll'
-
 const transform = prefixStyle('transform')
 const transitionDuration = prefixStyle('transitionDuration')
 
 export default {
-  name: 'Player',
-  components: {
-    ProgressBar,
-    ProgressCircle,
-    Scroll
-  },
   data () {
     return {
       songReady: false,
@@ -133,8 +120,8 @@ export default {
       radius: 32,
       currentLyric: null,
       currentLineNum: 0,
-      playingLyric: '',
-      currentShow: 'cd'
+      currentShow: 'cd',
+      playingLyric: ''
     }
   },
   computed: {
@@ -150,12 +137,15 @@ export default {
     miniIcon () {
       return this.playing ? 'icon-pause-mini' : 'icon-play-mini'
     },
+    disableCls () {
+      return this.songReady ? '' : 'disable'
+    },
     percent () {
       return this.currentTime / this.currentSong.duration
     },
     ...mapGetters([
-      'playList',
       'fullScreen',
+      'playList',
       'currentSong',
       'playing',
       'currentIndex',
@@ -175,19 +165,17 @@ export default {
     },
     enter (el, done) {
       const {x, y, scale} = this._getPosAndScale()
-
       let animation = {
         0: {
-          transform: `translate3d(${x}px, ${y}px, 0) scale(${scale})`
+          transform: `translate3d(${x}px,${y}px,0) scale(${scale})`
         },
         60: {
-          transform: `translate3d(0, 0, 0) scale(1.1)`
+          transform: `translate3d(0,0,0) scale(1.1)`
         },
         100: {
-          transform: `translate3d(0, 0, 0) scale(1)`
+          transform: `translate3d(0,0,0) scale(1)`
         }
       }
-
       animations.registerAnimation({
         name: 'move',
         animation,
@@ -196,7 +184,6 @@ export default {
           easing: 'linear'
         }
       })
-
       animations.runAnimation(this.$refs.cdWrapper, 'move', done)
     },
     afterEnter () {
@@ -206,7 +193,7 @@ export default {
     leave (el, done) {
       this.$refs.cdWrapper.style.transition = 'all 0.4s'
       const {x, y, scale} = this._getPosAndScale()
-      this.$refs.cdWrapper.style[transform] = `translate3d(${x}px, ${y}px, 0) scale(${scale})`
+      this.$refs.cdWrapper.style[transform] = `translate3d(${x}px,${y}px,0) scale(${scale})`
       this.$refs.cdWrapper.addEventListener('transitionend', done)
     },
     afterLeave () {
@@ -222,15 +209,6 @@ export default {
         this.currentLyric.togglePlay()
       }
     },
-    ready () {
-      this.songReady = true
-    },
-    error () {
-      this.songReady = true
-    },
-    updateTime (e) {
-      this.currentTime = e.target.currentTime
-    },
     end () {
       if (this.mode === playMode.loop) {
         this.loop()
@@ -244,6 +222,24 @@ export default {
       if (this.currentLyric) {
         this.currentLyric.seek(0)
       }
+    },
+    next () {
+      if (!this.songReady) {
+        return
+      }
+      if (this.playList.length === 1) {
+        this.loop()
+      } else {
+        let index = this.currentIndex + 1
+        if (index === this.playList.length) {
+          index = 0
+        }
+        this.setCurrentIndex(index)
+        if (!this.playing) {
+          this.togglePlaying()
+        }
+      }
+      this.songReady = false
     },
     prev () {
       if (!this.songReady) {
@@ -263,24 +259,14 @@ export default {
       }
       this.songReady = false
     },
-    next () {
-      if (!this.songReady) {
-        return
-      }
-
-      if (this.playList.length === 1) {
-        this.loop()
-      } else {
-        let index = this.currentIndex + 1
-        if (index === this.playList.length) {
-          index = 0
-        }
-        this.setCurrentIndex(index)
-        if (!this.playing) {
-          this.togglePlaying()
-        }
-      }
-      this.songReady = false
+    ready () {
+      this.songReady = true
+    },
+    error () {
+      this.songReady = true
+    },
+    updateTime (e) {
+      this.currentTime = e.target.currentTime
     },
     format (interval) {
       interval = interval | 0
@@ -288,9 +274,9 @@ export default {
       const second = this._pad(interval % 60)
       return `${minute}:${second}`
     },
-    progressBarChange (percent) {
+    onProgressBarChange (percent) {
       const currentTime = this.currentSong.duration * percent
-      this.$refs.audio.currentTime = this.currentSong.duration * percent
+      this.$refs.audio.currentTime = currentTime
       if (!this.playing) {
         this.togglePlaying()
       }
@@ -308,7 +294,7 @@ export default {
         list = this.sequenceList
       }
       this.resetCurrentIndex(list)
-      this.setPlayList(list)
+      this.setplayList(list)
     },
     resetCurrentIndex (list) {
       let index = list.findIndex((item) => {
@@ -340,8 +326,6 @@ export default {
     },
     middleTouchStart (e) {
       this.touch.initiated = true
-      // 用来判断是否是一次移动
-      this.touch.moved = false
       const touch = e.touches[0]
       this.touch.startX = touch.pageX
       this.touch.startY = touch.pageY
@@ -356,9 +340,6 @@ export default {
       if (Math.abs(deltaY) > Math.abs(deltaX)) {
         return
       }
-      if (!this.touch.moved) {
-        this.touch.moved = true
-      }
       const left = this.currentShow === 'cd' ? 0 : -window.innerWidth
       const offsetWidth = Math.min(0, Math.max(-window.innerWidth, left + deltaX))
       this.touch.percent = Math.abs(offsetWidth / window.innerWidth)
@@ -368,9 +349,6 @@ export default {
       this.$refs.middleL.style[transitionDuration] = 0
     },
     middleTouchEnd () {
-      if (!this.touch.moved) {
-        return
-      }
       let offsetWidth
       let opacity
       if (this.currentShow === 'cd') {
@@ -399,14 +377,22 @@ export default {
       this.$refs.middleL.style[transitionDuration] = `${time}ms`
       this.touch.initiated = false
     },
+    _pad (num, n = 2) {
+      let len = num.toString().length
+      while (len < n) {
+        num = '0' + num
+        len++
+      }
+      return num
+    },
     _getPosAndScale () {
       const targetWidth = 40
       const paddingLeft = 40
       const paddingBottom = 30
       const paddingTop = 80
-      const width = window.innderWidth * 0.8
+      const width = window.innerWidth * 0.8
       const scale = targetWidth / width
-      const x = -(window.innderWidth / 2 - paddingLeft)
+      const x = -(window.innerWidth / 2 - paddingLeft)
       const y = window.innerHeight - paddingTop - width / 2 - paddingBottom
       return {
         x,
@@ -414,20 +400,12 @@ export default {
         scale
       }
     },
-    _pad (num, n = 2) {
-      let len = num.toString().length
-      while (len < 2) {
-        num = '0' + num
-        len++
-      }
-      return num
-    },
     ...mapMutations({
       setFullScreen: 'SET_FULL_SCREEN',
       setPlayingState: 'SET_PLAYING_STATE',
       setCurrentIndex: 'SET_CURRENT_INDEX',
       setPlayMode: 'SET_PLAY_MODE',
-      setPlayList: 'SET_PLAYLIST'
+      setplayList: 'SET_playList'
     })
   },
   watch: {
@@ -441,7 +419,6 @@ export default {
         this.playingLyric = ''
         this.currentLineNum = 0
       }
-
       setTimeout(() => {
         this.$refs.audio.play()
         this.getLyric()
@@ -453,11 +430,16 @@ export default {
         newPlaying ? audio.play() : audio.pause()
       })
     }
+  },
+  components: {
+    ProgressBar,
+    ProgressCircle,
+    Scroll
   }
 }
 </script>
 
-<style lang="stylus" scoped>
+<style scoped lang="stylus" rel="stylesheet/stylus">
   @import "~common/stylus/variable"
   @import "~common/stylus/mixin"
   .player
@@ -678,11 +660,10 @@ export default {
           font-size: $font-size-small
           color: $color-text-d
       .control
-        position: relative
         flex: 0 0 30px
         width: 30px
         padding: 0 10px
-        .icon-play-mini, .icon-pause-mini, .icon-playlist
+        .icon-play-mini, .icon-pause-mini, .icon-playList
           font-size: 30px
           color: $color-theme-d
         .icon-mini
